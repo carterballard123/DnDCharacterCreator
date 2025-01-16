@@ -54,9 +54,9 @@ struct Weapon {
 };
 
 struct Class {
-    char name[20];         // Name of the class (e.g., "Fighter", "Wizard", "Rogue")
-    char subClass[30];     // Name of the subclass or specialization (e.g., "Champion", "Evoker")
-    char hitDie[10];       // Hit die used for determining hit points (e.g., "1d8", "1d10")
+    char *name;         // Name of the class (e.g., "Fighter", "Wizard", "Rogue")
+    char subClass[25];     // Name of the subclass or specialization (e.g., "Champion", "Evoker")
+    char *hitDie;          // Hit die used for determining hit points (e.g., "1d8", "1d10")
 };
 
 struct Armor armors[] = {
@@ -438,6 +438,13 @@ void selectClass(struct Character *character){
             fprintf(stderr, "Memory allocation failed!\n");
             exit(EXIT_FAILURE);
         }
+    } 
+
+    character->class->name = malloc(15 * sizeof(char));     
+    character->class->hitDie = malloc(10 * sizeof(char)); 
+    if (!character->class->name || !character->class->hitDie) { 
+        fprintf(stderr, "Memory allocation failed!\n"); 
+        exit(EXIT_FAILURE);
     }
 
     // Display Class options
@@ -452,7 +459,8 @@ void selectClass(struct Character *character){
         validInput = isValidInput(&usersClass, 1, 12);  // Validate the input range
     }
 
-    strcpy(character->class->name, classes[usersClass - 1][0]); // Saves user class option
+    strncpy(character->class->name, classes[usersClass - 1][0], 14); 
+    character->class->name[14] = '\0'; // Ensure null termination
 
     printf("You selected: %s\n\n", character->class->name);
 
@@ -895,7 +903,7 @@ void addCharacter(struct Character **newChar){
         printf("Failed to allocate memory :(\n");
         exit(1);
     }
-
+    newCharacter->class = NULL;
     //prompt user to enter details for character
     printf("For more information regarding DnD character details visit DnD Beyond\n\n");
 
