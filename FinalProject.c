@@ -55,11 +55,11 @@ struct Weapon {
     int isReach;              // Boolean indicating if the weapon has extended reach (1 = yes, 0 = no)
 };
 
-struct Weapon weapons[31];
+struct Weapon weapons[31];      // Array to hold all of the data that weapons.txt has
 
 struct Class {
     char *name;         // Name of the class (e.g., "Fighter", "Wizard", "Rogue")
-    char subClass[25];     // Name of the subclass or specialization (e.g., "Champion", "Evoker")
+    char *subClass;     // Name of the subclass or specialization (e.g., "Champion", "Evoker")
     char *hitDie;          // Hit die used for determining hit points (e.g., "1d8", "1d10")
 };
 
@@ -526,8 +526,10 @@ int selectLevel(struct Character *character) {
 }
 
 void selectClass(struct Character *character){
+
     int usersClass;
     int validInput = 0;
+    char tempClass[50], tempHitDie[50];
 
     if (character->class == NULL) {
         character->class = malloc(sizeof(struct Class));
@@ -537,13 +539,9 @@ void selectClass(struct Character *character){
         }
     } 
 
-    character->class->name = malloc(15 * sizeof(char));     
-    character->class->hitDie = malloc(10 * sizeof(char)); 
-    if (!character->class->name || !character->class->hitDie) { 
-        fprintf(stderr, "Memory allocation failed!\n"); 
-        exit(EXIT_FAILURE);
-    }
-
+    character->class->name = NULL;
+    character->class->hitDie = NULL;
+    
     // Display Class options
     printf("Enter your character's class:\n");
     for(int i = 0; i < 12; i++){
@@ -556,33 +554,55 @@ void selectClass(struct Character *character){
         validInput = isValidInput(&usersClass, 1, 12);  // Validate the input range
     }
 
-    strncpy(character->class->name, classes[usersClass - 1][0], 14); 
-    character->class->name[14] = '\0'; // Ensure null termination
+    // Set class name
+    strcpy(tempClass, classes[usersClass - 1][0]);
+    if (character->class->name) {
+        free(character->class->name); // Free old memory if allocated
+    }
+    character->class->name = malloc(strlen(tempClass) + 1);
+
+    if (!character->class->name) {
+        fprintf(stderr, "Memory allocation failed!\n");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(character->class->name, tempClass);
 
     printf("You selected: %s\n\n", character->class->name);
 
     //adds hit die
     if(strcmp(character->class->name, "Wizard") == 0 || strcmp(character->class->name, "Sorcerer") == 0){
-        strcpy(character->class->hitDie, "1D6");
+        strcpy(tempHitDie, "1D6");
     }
     else if(strcmp(character->class->name, "Bard") == 0 || strcmp(character->class->name, "Cleric") == 0 || strcmp(character->class->name, "Druid") == 0 || strcmp(character->class->name, "Monk") == 0 || strcmp(character->class->name, "Rogue") == 0 || strcmp(character->class->name, "Warlock") == 0){
-        strcpy(character->class->hitDie, "1D8");
+        strcpy(tempHitDie, "1D8");
     }
     else if(strcmp(character->class->name, "Fighter") == 0 || strcmp(character->class->name, "Paladin") == 0 || strcmp(character->class->name, "Ranger") == 0){
-        strcpy(character->class->hitDie, "1D10");
+        strcpy(tempHitDie, "1D10");
     }
     else if(strcmp(character->class->name, "Barbarian") == 0){
-        strcpy(character->class->hitDie, "1D12");
+        strcpy(tempHitDie, "1D12");
     }
     else{
-        strcpy(character->class->hitDie, "-1");
+        strcpy(tempHitDie, "-1");
     }
+
+    if (character->class->hitDie) {
+        free(character->class->hitDie); // Free old memory if allocated
+    }
+    character->class->hitDie = malloc(strlen(tempHitDie) + 1);
+
+    if (!character->class->hitDie) {
+        fprintf(stderr, "Memory allocation failed!\n");
+        exit(EXIT_FAILURE);
+    }
+    strcpy(character->class->hitDie, tempHitDie);
 }
 
 void selectSubClass(struct Character *character){
     int usersSubClass, usersChoice = 0;
     int validInput = 0;
     int usersClass = -1;
+    char tempSubClass[50];
 
     // Display sub class options
     printf("Enter your character's sub class:\n");
@@ -610,7 +630,18 @@ void selectSubClass(struct Character *character){
         validInput = isValidInput(&usersChoice, 1, 4);  // Validate the input range
     }
 
-    strcpy(character->class->subClass, classes[usersClass][usersChoice]);
+    strcpy(tempSubClass, classes[usersClass][usersChoice]);
+    if (character->class->subClass) {
+        free(character->class->subClass); // Free old memory if allocated
+    }
+    character->class->subClass = malloc(strlen(tempSubClass) + 1);
+
+    if (!character->class->subClass) {
+        fprintf(stderr, "Memory allocation failed!\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    strcpy(character->class->subClass, tempSubClass);
     printf("You selected: %s\n\n", character->class->subClass);
 }
 
