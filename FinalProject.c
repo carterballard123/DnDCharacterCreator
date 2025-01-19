@@ -63,23 +63,15 @@ struct Class {
     char *hitDie;          // Hit die used for determining hit points (e.g., "1d8", "1d10")
 };
 
-const char *attributes[] = {    // Character attributes
-    "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"
-};
+char *attributes[6];    // Array to hold all of the data that armors.txt has
 
-const char *alignments[] = {    // Character alignments
-    "Lawful Good", "Neutral Good", "Chaotic Good", "Lawful Neutral", "True Neutral", "Chaotic Neutral", "Lawful Evil", "Neutral Evil", "Chaotic Evil"
-};
+char *alignments[9];    // Array to hold all of the data that armors.txt has
 
-const char *races[] = {         // Character races
-    "Aasimar", "Dragonborn", "Dwarf", "Elf", "Gnome", "Goliath", "Halfling", "Human", "Orc", "Tiefling"
-};
+char *races[10];         // Array to hold all of the data that armors.txt has
 
-const char *backgrounds[] = {   // Character backgrounds
-    "Acolyte", "Artisan", "Charlatan", "Criminal", "Entertainer", "Farmer", "Guard", "Guide", "Hermit", "Merchant", "Noble", "Sage", "Sailor", "Scribe", "Soldier", "Wayfarer"
-};
+char *backgrounds[16];   // Array to hold all of the data that armors.txt has
 
-const char *classes[12][5] = {  // Character classes + sub classes
+const char *classes[12][5] = {  // Array to hold all of the data that armors.txt has
     {"Barbarian", "Path of the Berserker", "Path of the Wild Heart", "Path of the World Tree", "Path of the Zealot"},
     {"Bard", "College of Dance", "College of Glamour", "College of Lore", "College of Valor"},
     {"Cleric", "Life Domain", "Light Domain", "Trickery Domain", "War Domain"},
@@ -104,6 +96,8 @@ void loadArmors(const char *filename);
 void freeArmors(void);
 void loadWeapons(const char *filename);
 void freeWeapons(void);
+void loadFilesTo2DArray(const char *filename, char **array, int i);
+void free2DArray(char **array, int size);
 
 // Armor functions
 const char *armorRequirement(struct Armor *armor);
@@ -174,6 +168,10 @@ int main(){
 
     loadArmors("armors.txt");
     loadWeapons("weapons.txt");
+    loadFilesTo2DArray("attributes.txt", attributes, 6);
+    loadFilesTo2DArray("alignments.txt", alignments, 9);
+    loadFilesTo2DArray("races.txt", races, 10);
+    loadFilesTo2DArray("backgrounds.txt", backgrounds, 16);
 
     srand(time(NULL));          // Seeds a random number
 
@@ -282,6 +280,10 @@ int main(){
 
     freeArmors();
     freeWeapons();
+    free2DArray(attributes, 6);
+    free2DArray(alignments, 9);
+    free2DArray(races, 10);
+    free2DArray(backgrounds, 16);
     return 0;
 }
 
@@ -452,6 +454,47 @@ void freeWeapons(void) {
         free(weapons[i].damageType);
         free(weapons[i].damageDice);
         free(weapons[i].twoHandDamage);
+    }
+}
+
+void loadFilesTo2DArray(const char *filename, char **array, int i) {
+    char buffer[256];
+    int count = 0;
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL && count < i) {
+        // Remove newline character if present
+        buffer[strcspn(buffer, "\n")] = '\0';
+
+        // Allocate memory for the string and copy it
+        array[count] = malloc(strlen(buffer) + 1);
+        if (array[count] == NULL) {
+            fprintf(stderr, "Memory allocation error\n");
+            fclose(file);
+            return;
+        }
+        strcpy(array[count], buffer);
+
+        count++;
+    }
+
+    fclose(file);
+
+    if (count != i) {
+        fprintf(stderr, "Warning: Expected %d items, but loaded %d from %s.\n", i, count, filename);
+    }
+}
+
+void free2DArray(char **array, int size) {
+    for (int i = 0; i < size; i++) {
+        if (array[i] != NULL) {
+            free(array[i]);
+        }
     }
 }
 
@@ -1032,6 +1075,8 @@ void addCharacter(struct Character **newChar){
         exit(1);
     }
     newCharacter->class = NULL;
+    newCharacter->armor = NULL;
+    newCharacter->weapon = NULL;
     //prompt user to enter details for character
     printf("For more information regarding DnD character details visit DnD Beyond\n\n");
 
@@ -1077,7 +1122,7 @@ void displayCharacter(struct Character *character){
         printf("Class: %s   Level: %d   Background: %s\n\n", character->class->name, character->level, character->background);                                    //displays Class, Level, Background
         printf("Sub Class: %s   Race: %s    Alignment: %s\n\n", character->class->subClass, character->race, character->alignment);                                                                //displays Race, Alignment
         printf("Armor: %s   Armor Class: %d     Weapon: %s\n\n", character->armor->name, calculateArmorClass(character->dexterity, character->armor->name, character->hasShield), character->weapon->name);   //displays Armor, Armor Class, Weapon
-        printf("Total HP: %d    Proficiency Modifier: %d\n\n", character->HP, character->proficiencyModifier);
+        printf("Total HP: %d    Proficiency Modifier: %d\n\n", calculateHealth(character), character->proficiencyModifier);
         printf("Strength\nAbility Score: %d\nModifier: %d\n\n", character->strength, calculateModifier(character->strength));                          //displays Strength
         printf("Dexterity\nAbility Score: %d\nModifier: %d\n\n", character->dexterity, calculateModifier(character->dexterity));                       //displays Dexterity 
         printf("Constitution\nAbility Score: %d\nModifier: %d\n\n", character->constitution, calculateModifier(character->constitution));              //displays Constitution
@@ -1098,7 +1143,7 @@ void searchCharacter(struct Character *character, char *searchCharacterName){
             printf("Class: %s   Level: %d   Background: %s\n\n", character->class->name, character->level, character->background);                                    //displays Class, Level, Background
             printf("Sub Class: %s   Race: %s    Alignment: %s\n\n", character->class->subClass, character->race, character->alignment);                                                                //displays Race, Alignment
             printf("Armor: %s   Armor Class: %d     Weapon: %s\n\n", character->armor->name, calculateArmorClass(character->dexterity, character->armor->name, character->hasShield), character->weapon->name);   //displays Armor, Armor Class, Weapon
-            printf("Total HP: %d    Proficiency Modifier: %d\n\n", character->HP, character->proficiencyModifier);
+            printf("Total HP: %d    Proficiency Modifier: %d\n\n", calculateHealth(character), character->proficiencyModifier);
             printf("Strength\nAbility Score: %d\nModifier: %d\n\n", character->strength, calculateModifier(character->strength));                          //displays Strength
             printf("Dexterity\nAbility Score: %d\nModifier: %d\n\n", character->dexterity, calculateModifier(character->dexterity));                       //displays Dexterity 
             printf("Constitution\nAbility Score: %d\nModifier: %d\n\n", character->constitution, calculateModifier(character->constitution));              //displays Constitution
