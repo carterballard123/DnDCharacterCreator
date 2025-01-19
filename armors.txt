@@ -1,0 +1,13 @@
+Unarmored,-----,10,-1,0,0
+Padded Armor,Light,11,-1,0,1
+Leather Armor,Light,11,-1,0,0
+Studded Leather Armor,Light,12,-1,0,0
+Hide Armor,Medium,12,2,1,0
+Chain Shirt Armor,Medium,13,2,1,0
+Scale Mail Armor,Medium,14,2,1,1
+Breastplate Armor,Medium,14,2,1,0
+Half Plate Armor,Medium,15,2,1,1
+Ring Mail Armor,Heavy,14,0,0,1
+Chain Mail Armor,Heavy,16,0,0,1
+Splint Armor,Heavy,17,0,0,1
+Plate Armor,Heavy,18,0,0,1

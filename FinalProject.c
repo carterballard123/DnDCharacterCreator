@@ -30,8 +30,8 @@ struct Character {
 };
 
 struct Armor {
-    char name[25];            // Name of the armor (e.g., "Chain Mail", "Leather Armor")
-    char type[20];            // Category of armor (e.g., "Light", "Medium", "Heavy")
+    char *name;            // Name of the armor (e.g., "Chain Mail", "Leather Armor")
+    char *type;            // Category of armor (e.g., "Light", "Medium", "Heavy")
     int baseAC;               // Base Armor Class provided by this armor
     int maxDexBonus;          // Maximum Dexterity modifier allowed with this armor (e.g., 2 for medium armor)
     int requiresDexCap;       // Boolean indicating if the Dexterity modifier is capped (1 = capped, 0 = uncapped)
@@ -53,29 +53,12 @@ struct Weapon {
     int isReach;              // Boolean indicating if the weapon has extended reach (1 = yes, 0 = no)
 };
 
+struct Armor armors[13];       // Array to hold all of the data that armors.txt has
+
 struct Class {
     char *name;         // Name of the class (e.g., "Fighter", "Wizard", "Rogue")
     char subClass[25];     // Name of the subclass or specialization (e.g., "Champion", "Evoker")
     char *hitDie;          // Hit die used for determining hit points (e.g., "1d8", "1d10")
-};
-
-struct Armor armors[] = {
-    {"Unarmored", "-----", 10, -1, 0, 0},
-    //light armor
-    {"Padded Armor", "Light", 11, -1, 0, 1},
-    {"Leather Armor", "Light", 11, -1, 0, 0},
-    {"Studded Leather Armor", "Light", 12, -1, 0, 0},
-    //medium armor
-    {"Hide Armor", "Medium", 12, 2, 1, 0},
-    {"Chain Shirt Armor", "Medium", 13, 2, 1, 0},
-    {"Scale Mail Armor", "Medium", 14, 2, 1, 1},
-    {"Breastplate Armor", "Medium", 14, 2, 1, 0},
-    {"Half Plate Armor", "Medium", 15, 2, 1, 1},
-    //heavy armor
-    {"Ring Mail Armor", "Heavy", 14, 0, 0, 1},
-    {"Chain Mail Armor", "Heavy", 16, 0, 0, 1},
-    {"Splint Armor", "Heavy", 17, 0, 0, 1},
-    {"Plate Armor", "Heavy", 18, 0, 0, 1},
 };
 
 struct Weapon weapons[] = {
@@ -152,6 +135,10 @@ void inputBuffer(void);
 int isValidInput(int *userInput, int floor, int ceiling);
 int isValidName(char *name);
 
+// File Loading functions
+void loadArmors(const char *filename);
+void freeArmors(void);
+
 // Armor functions
 const char *armorRequirement(struct Armor *armor);
 const char *armorStealth(struct Armor *armor);
@@ -218,8 +205,10 @@ int rollD6(void);   // Rolls a D6
 int rollD4(void);   // Rolls a D4
 
 int main(){
+    const char *armorsFile = "armors.txt";
+    loadArmors(armorsFile);
 
-    srand(time(NULL)); // Seeds a random number
+    srand(time(NULL));          // Seeds a random number
 
     char userCharacter[25];     // Users character name input
     int userChoice;             // Users choice input
@@ -324,6 +313,7 @@ int main(){
             free(temp);
         }
 
+    freeArmors();
     return 0;
 }
 
@@ -356,6 +346,70 @@ int isValidName(char *name) {
         }
     }
     return 1;  // Valid name, no digits
+}
+
+// File Loading Functions
+void loadArmors(const char *filename) {
+
+    char buffer[256];
+    int count = 0;
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL && count < 13) {
+        // Remove newline character if present
+        buffer[strcspn(buffer, "\n")] = '\0';
+
+        // Temporary buffers for parsing
+        char tempName[256], tempType[256];
+        int baseAC, dexBonus, stealthDisadvantage, requiresDexCap;
+
+        // Parse the line
+        if (sscanf(buffer, "%255[^,],%255[^,],%d,%d,%d,%d", tempName, tempType, &baseAC, &dexBonus, &stealthDisadvantage, &requiresDexCap) != 6) {
+            fprintf(stderr, "Error parsing line: %s\n", buffer);
+            fclose(file);
+            return;
+        }
+
+        // Allocate memory for the name and type fields
+        armors[count].name = malloc(strlen(tempName) + 1);
+        armors[count].type = malloc(strlen(tempType) + 1);
+
+        if (armors[count].name == NULL || armors[count].type == NULL) {
+            fprintf(stderr, "Memory allocation error\n");
+            fclose(file);
+            return;
+        }
+
+        // Copy the parsed strings into the dynamically allocated memory
+        strcpy(armors[count].name, tempName);
+        strcpy(armors[count].type, tempType);
+
+        // Populate the remaining fields
+        armors[count].baseAC = baseAC;
+        armors[count].maxDexBonus = dexBonus;
+        armors[count].requiresDexCap = requiresDexCap;
+        armors[count].stealthDisadvantage = stealthDisadvantage;
+
+        count++;
+    }
+
+    fclose(file);
+
+    if (count != 13) {
+        fprintf(stderr, "Error: Expected %d armors, but loaded %d.\n", 13, count);
+    }
+}
+
+void freeArmors(void) {
+    for (int i = 0; i < 13; i++) {
+        free(armors[i].name);
+        free(armors[i].type);
+    }
 }
 
 // Armor functions
