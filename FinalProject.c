@@ -38,12 +38,14 @@ struct Armor {
     int stealthDisadvantage;  // Boolean indicating if this armor imposes disadvantage on Stealth checks (1 = yes, 0 = no)
 };
 
+struct Armor armors[13];        // Array to hold all of the data that armors.txt has
+
 struct Weapon {
-    char name[25];            // Name of the weapon (e.g., "Longsword", "Shortbow")
-    char type[15];            // Category of weapon (e.g., "Melee", "Ranged")
-    char damageType[15];      // Type of damage dealt (e.g., "Slashing", "Piercing", "Bludgeoning")
-    char damageDice[5];       // Damage dice for the weapon (e.g., "1d8", "2d6")
-    char twoHandDamage[5];    // Damage dice when used with two hands (if the weapon is versatile)
+    char *name;            // Name of the weapon (e.g., "Longsword", "Shortbow")
+    char *type;            // Category of weapon (e.g., "Melee", "Ranged")
+    char *damageType;      // Type of damage dealt (e.g., "Slashing", "Piercing", "Bludgeoning")
+    char *damageDice;       // Damage dice for the weapon (e.g., "1d8", "2d6")
+    char *twoHandDamage;    // Damage dice when used with two hands (if the weapon is versatile)
     int isFinesse;            // Boolean indicating if the weapon can use Dexterity for attack/damage rolls (1 = yes, 0 = no)
     int isVersatile;          // Boolean indicating if the weapon can be used one- or two-handed (1 = yes, 0 = no)
     int isTwoHanded;          // Boolean indicating if the weapon requires two hands to wield (1 = yes, 0 = no)
@@ -53,50 +55,12 @@ struct Weapon {
     int isReach;              // Boolean indicating if the weapon has extended reach (1 = yes, 0 = no)
 };
 
-struct Armor armors[13];       // Array to hold all of the data that armors.txt has
+struct Weapon weapons[31];
 
 struct Class {
     char *name;         // Name of the class (e.g., "Fighter", "Wizard", "Rogue")
     char subClass[25];     // Name of the subclass or specialization (e.g., "Champion", "Evoker")
     char *hitDie;          // Hit die used for determining hit points (e.g., "1d8", "1d10")
-};
-
-struct Weapon weapons[] = {
-    //bludgeoning
-    {"Club", "Melee", "Bludgeoning", "1d4", "1d4", 0, 0, 0, {0, 0}, 0, 1, 0},
-    {"Light Hammer", "Melee/Ranged", "Bludgeoning", "1d4", "1d4", 0, 0, 0, {20, 60}, 0, 1, 0},
-    {"Mace", "Melee", "Bludgeoning", "1d6", "1d6", 0, 0, 0, {0, 0}, 0, 0, 0},
-    {"Quarterstaff", "Melee", "Bludgeoning", "1d6", "1d8", 0, 1, 0, {0, 0}, 0, 0, 0},
-    {"Flail", "Melee", "Bludgeoning", "1d8", "1d8", 0, 0, 0, {0, 0}, 0, 0, 0},
-    {"Greatclub", "Melee", "Bludgeoning", "1d8", "1d8", 0, 0, 1, {0, 0}, 0, 0, 0},
-    {"Warhammer", "Melee", "Bludgeoning", "1d8", "1d10", 0, 1, 0, {0, 0}, 0, 0, 0},
-    {"Maul", "Melee", "Bludgeoning", "2d6", "2d6", 0, 0, 1, {0, 0}, 0, 1, 0},
-    //piercing
-    {"Dagger", "Melee/Ranged", "Piercing", "1d4", "1d4", 1, 0, 0, {20, 60}, 0, 1, 0},
-    {"Javelin", "Ranged", "Piercing", "1d6", "1d6", 0, 0, 0, {30, 120}, 0, 0, 0},
-    {"Spear", "Melee/Ranged", "Piercing", "1d6", "1d8", 0, 1, 0, {20, 60}, 0, 0, 0},
-    {"Trident", "Melee/Ranged", "Piercing", "1d6", "1d8", 0, 1, 0, {20, 60}, 0, 0, 0},
-    {"Rapier", "Melee", "Piercing", "1d8", "1d8", 1, 0, 0, {0, 0}, 0, 0, 0},
-    {"War Pick", "Melee", "Piercing", "1d8", "1d8", 0, 0, 0, {0, 0}, 0, 0, 0},
-    {"Pike", "Melee", "Piercing", "1d10", "1d10", 0, 0, 1, {0, 0}, 0, 1, 1},
-    {"Lance", "Melee", "Piercing", "1d12", "1d12", 0, 0, 0, {0, 0}, 0, 0, 1},
-    //slashing
-    {"Sickle", "Melee", "Slashing", "1d4", "1d4", 0, 0, 0, {0, 0}, 0, 1, 0},
-    {"Handaxe", "Melee/Ranged", "Slashing", "1d6", "1d6", 0, 0, 0, {20, 60}, 0, 1, 0},
-    {"Scimitar", "Melee", "Slashing", "1d6", "1d6", 1, 0, 0, {0, 0}, 1, 0, 0},
-    {"Shortsword", "Melee", "Piercing", "1d6", "1d6", 1, 0, 0, {0, 0}, 1, 0, 0},
-    {"Battleaxe", "Melee", "Slashing", "1d8", "1d10", 0, 1, 0, {0, 0}, 0, 0, 0},
-    {"Longsword", "Melee", "Slashing", "1d8", "1d10", 0, 1, 0, {0, 0}, 0, 0, 0},
-    {"Glaive", "Melee", "Slashing", "1d10", "1d10", 0, 0, 1, {0, 0}, 0, 1, 1},
-    {"Halberd", "Melee", "Slashing", "1d10", "1d10", 0, 0, 1, {0, 0}, 0, 1, 1},
-    {"Greataxe", "Melee", "Slashing", "1d12", "1d12", 0, 0, 1, {0, 0}, 0, 1, 0},
-    {"Greatsword", "Melee", "Slashing", "2d6", "2d6", 0, 0, 1, {0, 0}, 0, 1, 0},
-    //ranged
-    {"Hand Crossbow", "Ranged", "Piercing", "1d6", "1d6", 0, 0, 0, {30, 120}, 1, 0, 0},
-    {"Shortbow", "Ranged", "Piercing", "1d6", "1d6", 0, 0, 1, {80, 320}, 0, 0, 0},
-    {"Light Crossbow", "Ranged", "Piercing", "1d8", "1d8", 0, 0, 1, {80, 320}, 0, 0, 0},
-    {"Longbow", "Ranged", "Piercing", "1d8", "1d8", 0, 0, 1, {150, 600}, 0, 1, 0},
-    {"Heavy Crossbow", "Ranged", "Piercing", "1d10", "1d10", 0, 0, 1, {100, 400}, 0, 1, 0}
 };
 
 const char *attributes[] = {    // Character attributes
@@ -138,6 +102,8 @@ int isValidName(char *name);
 // File Loading functions
 void loadArmors(const char *filename);
 void freeArmors(void);
+void loadWeapons(const char *filename);
+void freeWeapons(void);
 
 // Armor functions
 const char *armorRequirement(struct Armor *armor);
@@ -205,8 +171,9 @@ int rollD6(void);   // Rolls a D6
 int rollD4(void);   // Rolls a D4
 
 int main(){
-    const char *armorsFile = "armors.txt";
-    loadArmors(armorsFile);
+
+    loadArmors("armors.txt");
+    loadWeapons("weapons.txt");
 
     srand(time(NULL));          // Seeds a random number
 
@@ -314,6 +281,7 @@ int main(){
         }
 
     freeArmors();
+    freeWeapons();
     return 0;
 }
 
@@ -409,6 +377,81 @@ void freeArmors(void) {
     for (int i = 0; i < 13; i++) {
         free(armors[i].name);
         free(armors[i].type);
+    }
+}
+
+void loadWeapons(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    char buffer[512];
+    int count = 0;
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL && count < 31) {
+        buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
+
+        // Temporary buffers for parsing
+        char tempName[256], tempType[256], tempDamageType[256], tempDamageDice[256], tempTwoHandedDamage[256];
+        int tempIsFinesse, tempIsVersatile, tempIsTwoHanded, tempIsLight, tempIsHeavy, tempIsReach, range1, range2;
+
+        // Parse the line using sscanf
+        int result = sscanf(buffer, "%255[^,],%255[^,],%255[^,],%255[^,],%255[^,],%d,%d,%d,%d,%d,%d,%d,%d", tempName, tempType, tempDamageType, tempDamageDice, tempTwoHandedDamage, &tempIsFinesse, &tempIsVersatile, &tempIsTwoHanded, &range1, &range2, &tempIsLight, &tempIsHeavy, &tempIsReach);
+
+        if (result != 13) {
+            fprintf(stderr, "Error parsing line: %s\n", buffer);
+            continue;
+        }
+
+        // Allocate memory for name, type, damageType, damage, and range
+        weapons[count].name = malloc(strlen(tempName) + 1);
+        weapons[count].type = malloc(strlen(tempType) + 1);
+        weapons[count].damageType = malloc(strlen(tempDamageType) + 1);
+        weapons[count].damageDice = malloc(strlen(tempDamageDice) + 1);
+        weapons[count].twoHandDamage = malloc(strlen(tempTwoHandedDamage) + 1);
+
+        if (weapons[count].name == NULL || weapons[count].type == NULL || weapons[count].damageType == NULL || weapons[count].damageDice == NULL || weapons[count].twoHandDamage == NULL) {
+            fprintf(stderr, "Memory allocation error\n");
+            fclose(file);
+            return;
+        }
+
+        // Copy the parsed strings into the dynamically allocated memory
+        strcpy(weapons[count].name, tempName);
+        strcpy(weapons[count].type, tempType);
+        strcpy(weapons[count].damageType, tempDamageType);
+        strcpy(weapons[count].damageDice, tempDamageDice);
+        strcpy(weapons[count].twoHandDamage, tempTwoHandedDamage);
+
+        // Populate the remaining fields
+        weapons[count].isFinesse = tempIsFinesse;
+        weapons[count].isVersatile = tempIsVersatile;
+        weapons[count].isTwoHanded = tempIsTwoHanded;
+        weapons[count].range[0] = range1;
+        weapons[count].range[1] = range2;
+        weapons[count].isLight = tempIsLight;
+        weapons[count].isHeavy = tempIsHeavy;
+        weapons[count].isReach = tempIsReach;
+
+        count++;
+    }
+
+    fclose(file);
+
+    if (count != 31) {
+        fprintf(stderr, "Error: Expected %d weapons, but loaded %d.\n", 31, count);
+    }
+}
+
+void freeWeapons(void) {
+    for (int i = 0; i < 31; i++) {
+        free(weapons[i].name);
+        free(weapons[i].type);
+        free(weapons[i].damageType);
+        free(weapons[i].damageDice);
+        free(weapons[i].twoHandDamage);
     }
 }
 
