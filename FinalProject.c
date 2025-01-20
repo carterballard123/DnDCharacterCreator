@@ -1160,22 +1160,15 @@ void addCharacter(struct Character **newChar){
     selectAttributes(newCharacter);
     selectArmor(newCharacter);
     selectWeapon(newCharacter);
-    printf("0");
     selectShield(newCharacter);
-    printf("1");
     newCharacter->proficiencyModifier = calculateProficiencyModifier(newCharacter);
-    printf("2");
     newCharacter->HP = calculateHealth(newCharacter);
-    printf("3");
     //inserts the new character at the beginning of the list
     newCharacter->next = *newChar;
-    printf("4");
     *newChar = newCharacter;
-    printf("5");
     if(newCharacter->level < 3){
         strcpy(newCharacter->class->subClass, "N/A");
     }
-    printf("6");
 }
 
 void displayCharacter(struct Character *character){
