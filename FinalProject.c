@@ -1077,6 +1077,24 @@ void addCharacter(struct Character **newChar){
     newCharacter->class = NULL;
     newCharacter->armor = NULL;
     newCharacter->weapon = NULL;
+
+    newCharacter->class = (struct Class *)malloc(sizeof(struct Class));
+    newCharacter->armor = (struct Armor *)malloc(sizeof(struct Armor));
+    newCharacter->weapon = (struct Weapon *)malloc(sizeof(struct Weapon));
+
+     // Initialize members to prevent undefined behavior
+    memset(newCharacter->class, 0, sizeof(struct Class));
+    memset(newCharacter->armor, 0, sizeof(struct Armor));
+    memset(newCharacter->weapon, 0, sizeof(struct Weapon));
+    strcpy(newCharacter->background, "N/A");
+    strcpy(newCharacter->race, "N/A");
+    strcpy(newCharacter->alignment, "N/A");
+    newCharacter->level = 1; // Default level
+    newCharacter->hasShield = 0; // Default to no shield
+    newCharacter->speed = 30;
+    newCharacter->proficiencyModifier = 0;
+    newCharacter->HP = 0;
+    
     //prompt user to enter details for character
     printf("For more information regarding DnD character details visit DnD Beyond\n\n");
 
@@ -1122,7 +1140,7 @@ void displayCharacter(struct Character *character){
         printf("Class: %s   Level: %d   Background: %s\n\n", character->class->name, character->level, character->background);                                    //displays Class, Level, Background
         printf("Sub Class: %s   Race: %s    Alignment: %s\n\n", character->class->subClass, character->race, character->alignment);                                                                //displays Race, Alignment
         printf("Armor: %s   Armor Class: %d     Weapon: %s\n\n", character->armor->name, calculateArmorClass(character->dexterity, character->armor->name, character->hasShield), character->weapon->name);   //displays Armor, Armor Class, Weapon
-        printf("Total HP: %d    Proficiency Modifier: %d\n\n", calculateHealth(character), character->proficiencyModifier);
+        printf("Total HP: %d    Proficiency Modifier: %d\n\n", character->HP, character->proficiencyModifier);
         printf("Strength\nAbility Score: %d\nModifier: %d\n\n", character->strength, calculateModifier(character->strength));                          //displays Strength
         printf("Dexterity\nAbility Score: %d\nModifier: %d\n\n", character->dexterity, calculateModifier(character->dexterity));                       //displays Dexterity 
         printf("Constitution\nAbility Score: %d\nModifier: %d\n\n", character->constitution, calculateModifier(character->constitution));              //displays Constitution
@@ -1143,7 +1161,7 @@ void searchCharacter(struct Character *character, char *searchCharacterName){
             printf("Class: %s   Level: %d   Background: %s\n\n", character->class->name, character->level, character->background);                                    //displays Class, Level, Background
             printf("Sub Class: %s   Race: %s    Alignment: %s\n\n", character->class->subClass, character->race, character->alignment);                                                                //displays Race, Alignment
             printf("Armor: %s   Armor Class: %d     Weapon: %s\n\n", character->armor->name, calculateArmorClass(character->dexterity, character->armor->name, character->hasShield), character->weapon->name);   //displays Armor, Armor Class, Weapon
-            printf("Total HP: %d    Proficiency Modifier: %d\n\n", calculateHealth(character), character->proficiencyModifier);
+            printf("Total HP: %d    Proficiency Modifier: %d\n\n", character->HP, character->proficiencyModifier);
             printf("Strength\nAbility Score: %d\nModifier: %d\n\n", character->strength, calculateModifier(character->strength));                          //displays Strength
             printf("Dexterity\nAbility Score: %d\nModifier: %d\n\n", character->dexterity, calculateModifier(character->dexterity));                       //displays Dexterity 
             printf("Constitution\nAbility Score: %d\nModifier: %d\n\n", character->constitution, calculateModifier(character->constitution));              //displays Constitution
@@ -1235,6 +1253,7 @@ void levelUpCharacter(struct Character *character, char *levelCharacterName){
     if(userChoice == 1){
         character->level++;
         printf("\n'%s' has leveled up! New level: %d\n\n", character->name, character->level);
+        character->HP = calculateHealth(character);
         if(character->level == 3){
             printf("You have reached level 3! It's time to choose a subclass for '%s'.\n", character->name);
             selectSubClass(character);
