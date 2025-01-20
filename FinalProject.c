@@ -71,20 +71,7 @@ char *races[10];         // Array to hold all of the data that armors.txt has
 
 char *backgrounds[16];   // Array to hold all of the data that armors.txt has
 
-const char *classes[12][5] = {  // Array to hold all of the data that armors.txt has
-    {"Barbarian", "Path of the Berserker", "Path of the Wild Heart", "Path of the World Tree", "Path of the Zealot"},
-    {"Bard", "College of Dance", "College of Glamour", "College of Lore", "College of Valor"},
-    {"Cleric", "Life Domain", "Light Domain", "Trickery Domain", "War Domain"},
-    {"Druid", "Circle of the Land", "Circle of the Moon", "Circle of the Sea", "Circle of the Stars"},
-    {"Fighter", "Battle Master", "Champion", "Eldritch Knight", "Psi Warrior"}, 
-    {"Monk", "Warrior of Mercy", "Warrior of Shadow", "Warrior of the Elements", "Warrior of the Open Hand"}, 
-    {"Paladin", "Oath of Devotion", "Oath of Glory", "Oath of the Ancients", "Oath of Vengeance"}, 
-    {"Ranger", "Beast Master", "Fey Wanderer", "Gloom Stalker", "Hunter"}, 
-    {"Rogue", "Arcane Trickster", "Assassin", "Soulknife", "Thief"},
-    {"Sorcerer", "Aberrant Sorcery", "Clockwork Sorcery", "Draconic Sorcery", "Wild Magic Sorcery"}, 
-    {"Warlock", "Archfey Patron", "Celestial Patron", "Fiend Patron", "Great Old One Patron"}, 
-    {"Wizard", "Abjurer", "Diviner", "Evoker", "Illusionist"}
-};
+char *classes[12][5];  // Array to hold all of the data that armors.txt has
 
 // Utility functions
 void inputBuffer(void);
@@ -98,6 +85,9 @@ void loadWeapons(const char *filename);
 void freeWeapons(void);
 void loadFilesTo2DArray(const char *filename, char **array, int i);
 void free2DArray(char **array, int size);
+void loadClassesFromFile(const char *filename);
+void freeClasses(void);
+void initializeGlobalArrays(void);
 
 // Armor functions
 const char *armorRequirement(struct Armor *armor);
@@ -166,12 +156,7 @@ int rollD4(void);   // Rolls a D4
 
 int main(){
 
-    loadArmors("armors.txt");
-    loadWeapons("weapons.txt");
-    loadFilesTo2DArray("attributes.txt", attributes, 6);
-    loadFilesTo2DArray("alignments.txt", alignments, 9);
-    loadFilesTo2DArray("races.txt", races, 10);
-    loadFilesTo2DArray("backgrounds.txt", backgrounds, 16);
+    initializeGlobalArrays();
 
     srand(time(NULL));          // Seeds a random number
 
@@ -284,6 +269,7 @@ int main(){
     free2DArray(alignments, 9);
     free2DArray(races, 10);
     free2DArray(backgrounds, 16);
+    void freeClasses();
     return 0;
 }
 
@@ -496,6 +482,57 @@ void free2DArray(char **array, int size) {
             free(array[i]);
         }
     }
+}
+
+void loadClassesFromFile(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(1);
+    }
+
+    char line[256];
+    int class = 0;
+
+    while (fgets(line, sizeof(line), file) != NULL && class < 12) {
+        line[strcspn(line, "\n")] = '\0';  // Remove trailing newline if present
+
+        char *token = strtok(line, ",");
+        int subclass = 0;
+
+        while (token != NULL && subclass < 5) {
+            classes[class][subclass] = strdup(token);  // Allocate memory and copy the string
+            if (classes[class][subclass] == NULL) {
+                printf("Memory allocation failed for classes[%d][%d]\n", class, subclass);
+                fclose(file);
+                exit(1);
+            }
+            token = strtok(NULL, ",");
+            subclass++;
+        }
+
+        class++;
+    }
+
+    fclose(file);
+}
+
+void freeClasses(void) {
+    for (int i = 0; i < 12; i++) {
+        for (int j = 0; j < 5; j++) {
+            free(classes[i][j]);  // Free allocated memory
+        }
+    }
+}
+
+void initializeGlobalArrays(void) {
+    loadArmors("armors.txt");
+    loadWeapons("weapons.txt");
+    loadFilesTo2DArray("attributes.txt", attributes, 6);
+    loadFilesTo2DArray("alignments.txt", alignments, 9);
+    loadFilesTo2DArray("races.txt", races, 10);
+    loadFilesTo2DArray("backgrounds.txt", backgrounds, 16);
+    loadClassesFromFile("classes.txt");
 }
 
 // Armor functions
@@ -1068,24 +1105,36 @@ int calculateProficiencyModifier(struct Character *character){
 void addCharacter(struct Character **newChar){
     int userCurrLevel;
     //make space for new character in memory
-    struct Character *newCharacter = (struct Character *)malloc(sizeof(struct Character));
-
+    struct Character *newCharacter = malloc(sizeof(struct Character));
     if (newCharacter == NULL){
         printf("Failed to allocate memory :(\n");
         exit(1);
     }
-    newCharacter->class = NULL;
-    newCharacter->armor = NULL;
-    newCharacter->weapon = NULL;
+    
+    newCharacter->class = malloc(sizeof(struct Class));
+    if (newCharacter->class == NULL) {
+        printf("Failed to allocate memory for class.\n");
+        free(newCharacter);
+        exit(1);
+    }
 
-    newCharacter->class = (struct Class *)malloc(sizeof(struct Class));
-    newCharacter->armor = (struct Armor *)malloc(sizeof(struct Armor));
-    newCharacter->weapon = (struct Weapon *)malloc(sizeof(struct Weapon));
+    newCharacter->armor = malloc(sizeof(struct Armor));
+    if (newCharacter->armor == NULL) {
+        printf("Failed to allocate memory for armor.\n");
+        free(newCharacter->class);
+        free(newCharacter);
+        exit(1);
+    }
 
-     // Initialize members to prevent undefined behavior
-    memset(newCharacter->class, 0, sizeof(struct Class));
-    memset(newCharacter->armor, 0, sizeof(struct Armor));
-    memset(newCharacter->weapon, 0, sizeof(struct Weapon));
+    newCharacter->weapon = malloc(sizeof(struct Weapon));
+    if (newCharacter->weapon == NULL) {
+        printf("Failed to allocate memory for weapon.\n");
+        free(newCharacter->armor);
+        free(newCharacter->class);
+        free(newCharacter);
+        exit(1);
+    }
+
     strcpy(newCharacter->background, "N/A");
     strcpy(newCharacter->race, "N/A");
     strcpy(newCharacter->alignment, "N/A");
@@ -1111,17 +1160,22 @@ void addCharacter(struct Character **newChar){
     selectAttributes(newCharacter);
     selectArmor(newCharacter);
     selectWeapon(newCharacter);
+    printf("0");
     selectShield(newCharacter);
-
-    newCharacter->speed = 30;
+    printf("1");
     newCharacter->proficiencyModifier = calculateProficiencyModifier(newCharacter);
+    printf("2");
     newCharacter->HP = calculateHealth(newCharacter);
+    printf("3");
     //inserts the new character at the beginning of the list
     newCharacter->next = *newChar;
+    printf("4");
     *newChar = newCharacter;
+    printf("5");
     if(newCharacter->level < 3){
         strcpy(newCharacter->class->subClass, "N/A");
     }
+    printf("6");
 }
 
 void displayCharacter(struct Character *character){
