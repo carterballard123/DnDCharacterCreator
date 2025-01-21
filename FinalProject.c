@@ -88,6 +88,7 @@ void free2DArray(char **array, int size);
 void loadClassesFromFile(const char *filename);
 void freeClasses(void);
 void loadCharactersFromFile(struct Character **currCharacter);
+void writeCharacterToFile(const char *fileName, struct Character *character);
 void initializeGlobalArrays(void);
 
 // Armor functions
@@ -617,6 +618,24 @@ void loadCharactersFromFile(struct Character **character) {
 
     fclose(index);
     printf("Characters loaded successfully from files.\n");
+}
+
+void writeCharacterToFile(const char *fileName, struct Character *character) {
+    FILE *characterFile = fopen(fileName, "w");
+    if (characterFile == NULL) {
+        printf("Error: Could not open the file '%s' for writing.\n", fileName);
+        return;
+    }
+
+    fprintf(characterFile, "Name: %s\n" "Level: %d\n" "Class: %s\n" "Subclass: %s\n" "Background: %s\n" "Race: %s\n" "Alignment: %s\n" "HP: %d\n" "Speed: %d\n" "Proficiency Modifier: %d\n"
+            "Strength: %d\n" "Dexterity: %d\n" "Constitution: %d\n" "Intelligence: %d\n" "Wisdom: %d\n" "Charisma: %d\n" "Armor: %s\n" "Weapon: %s\n" "Shield: %d\n",
+            character->name, character->level, character->class->name, character->class->subClass, character->background,
+            character->race, character->alignment, character->HP, character->speed, character->proficiencyModifier,
+            character->strength, character->dexterity, character->constitution, character->intelligence, character->wisdom,
+            character->charisma, character->armor->name, character->weapon->name, character->hasShield);
+
+    fclose(characterFile);
+    printf("Character data successfully written to '%s'.\n\n", fileName);
 }
 
 void initializeGlobalArrays(void) {
@@ -1323,27 +1342,7 @@ void addCharacter(struct Character **newChar){
     if (characterFile == NULL) {
         printf("Couldn't open the file: %s\n", fileName);
     } else {
-        fprintf(characterFile, "Name: %s\n", newCharacter->name);
-        fprintf(characterFile, "Level: %d\n", newCharacter->level);
-        fprintf(characterFile, "Class: %s\n", newCharacter->class->name);
-        fprintf(characterFile, "Subclass: %s\n", newCharacter->class->subClass);
-        fprintf(characterFile, "Background: %s\n", newCharacter->background);
-        fprintf(characterFile, "Race: %s\n", newCharacter->race);
-        fprintf(characterFile, "Alignment: %s\n", newCharacter->alignment);
-        fprintf(characterFile, "HP: %d\n", newCharacter->HP);
-        fprintf(characterFile, "Speed: %d\n", newCharacter->speed);
-        fprintf(characterFile, "Proficiency Modifier: %d\n", newCharacter->proficiencyModifier);
-        fprintf(characterFile, "Strength: %d\n", newCharacter->strength);
-        fprintf(characterFile, "Dexterity: %d\n", newCharacter->dexterity);
-        fprintf(characterFile, "Constitution: %d\n", newCharacter->constitution);
-        fprintf(characterFile, "Intelligence: %d\n", newCharacter->intelligence);
-        fprintf(characterFile, "Wisdom: %d\n", newCharacter->wisdom);
-        fprintf(characterFile, "Charisma: %d\n", newCharacter->charisma);
-        fprintf(characterFile, "Armor: %s\n", newCharacter->armor->name);
-        fprintf(characterFile, "Weapon: %s\n", newCharacter->weapon->name);
-        fprintf(characterFile, "Shield: %d", newCharacter->hasShield);
-        printf("Character data saved successfully to %s.\n", fileName);
-        fclose(characterFile);
+        writeCharacterToFile(fileName, newCharacter);
 
         // Append the file name to index.txt
         FILE *index = fopen("index.txt", "a");
@@ -1488,17 +1487,7 @@ void updateCharacter(struct Character *updatedCharacter, char *updateCharacterNa
                 return;
             }
 
-            fprintf(characterFile, "Name: %s\n" "Level: %d\n" "Class: %s\n" "Subclass: %s\n" "Background: %s\n" "Race: %s\n" "Alignment: %s\n"
-                    "HP: %d\n" "Speed: %d\n" "Proficiency Modifier: %d\n" "Strength: %d\n" "Dexterity: %d\n" "Constitution: %d\n"
-                    "Intelligence: %d\n" "Wisdom: %d\n" "Charisma: %d\n" "Armor: %s\n" "Weapon: %s\n" "Shield: %d\n",
-                    updatedCharacter->name, updatedCharacter->level, updatedCharacter->class->name, updatedCharacter->class->subClass, updatedCharacter->background,
-                    updatedCharacter->race, updatedCharacter->alignment, updatedCharacter->HP, updatedCharacter->speed, updatedCharacter->proficiencyModifier,
-                    updatedCharacter->strength, updatedCharacter->dexterity, updatedCharacter->constitution, updatedCharacter->intelligence, updatedCharacter->wisdom,
-                    updatedCharacter->charisma, updatedCharacter->armor->name, updatedCharacter->weapon->name, updatedCharacter->hasShield);
-
-            fclose(characterFile);
-
-            printf("Character details have been successfully updated and saved.\n\n");
+            writeCharacterToFile(fileName, updatedCharacter);
             return;
         }
         updatedCharacter = updatedCharacter->next;
@@ -1511,6 +1500,8 @@ void updateCharacter(struct Character *updatedCharacter, char *updateCharacterNa
 void deleteCharacter(struct Character **character, char *deleteCharacterName){
     struct Character *prev = NULL;
     struct Character *temp = *character;
+    int userChoice;
+    int validInput = 0;
 
     // Find the character in the list
     while(temp != NULL && strcmp(temp->name, deleteCharacterName) != 0){
@@ -1521,6 +1512,26 @@ void deleteCharacter(struct Character **character, char *deleteCharacterName){
     // If character not found
     if(temp == NULL){
         printf("Your character could not be found :(\n\n");
+        return;
+    }
+
+    printf("Are you sure you want to delete '%s'?\n", temp->name);
+    printf("1. Yes\n");
+    printf("2. No\n");
+
+    while(!validInput){
+        printf("Enter your choice: ");
+        scanf("%d", &userChoice);
+
+        if(userChoice == 1 || userChoice == 2){
+            validInput = 1;
+        } else {
+            printf("Invalid choice, please try again...\n\n");
+        }
+    }
+
+    if(userChoice == 2){
+        printf("\nDeletion canceled. '%s' was not deleted.\n\n", temp->name);
         return;
     }
 
@@ -1634,29 +1645,7 @@ void levelUpCharacter(struct Character *character, char *levelCharacterName){
             return;
         }
 
-        fprintf(characterFile, "Name: %s\n", character->name);
-        fprintf(characterFile, "Level: %d\n", character->level);
-        fprintf(characterFile, "Class: %s\n", character->class->name);
-        fprintf(characterFile, "Subclass: %s\n", character->class->subClass);
-        fprintf(characterFile, "Background: %s\n", character->background);
-        fprintf(characterFile, "Race: %s\n", character->race);
-        fprintf(characterFile, "Alignment: %s\n", character->alignment);
-        fprintf(characterFile, "HP: %d\n", character->HP);
-        fprintf(characterFile, "Speed: %d\n", character->speed);
-        fprintf(characterFile, "Proficiency Modifier: %d\n", character->proficiencyModifier);
-        fprintf(characterFile, "Strength: %d\n", character->strength);
-        fprintf(characterFile, "Dexterity: %d\n", character->dexterity);
-        fprintf(characterFile, "Constitution: %d\n", character->constitution);
-        fprintf(characterFile, "Intelligence: %d\n", character->intelligence);
-        fprintf(characterFile, "Wisdom: %d\n", character->wisdom);
-        fprintf(characterFile, "Charisma: %d\n", character->charisma);
-        fprintf(characterFile, "Armor: %s\n", character->armor->name);
-        fprintf(characterFile, "Weapon: %s\n", character->weapon->name);
-        fprintf(characterFile, "Shield: %d\n", character->hasShield);
-
-        fclose(characterFile);
-
-        printf("Character data has been updated in '%s'.\n\n", fileName);
+        writeCharacterToFile(fileName, character);
         return;
     }
     }
