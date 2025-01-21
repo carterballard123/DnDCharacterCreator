@@ -87,6 +87,7 @@ void loadFilesTo2DArray(const char *filename, char **array, int i);
 void free2DArray(char **array, int size);
 void loadClassesFromFile(const char *filename);
 void freeClasses(void);
+void loadCharactersFromFile(struct Character **currCharacter);
 void initializeGlobalArrays(void);
 
 // Armor functions
@@ -110,7 +111,6 @@ void selectAttributes(struct Character *character);
 void selectArmor(struct Character *newCharacter);
 void selectWeapon(struct Character *character);
 void selectShield(struct Character *character);
-
 
 // Calculate functions
 // calculateModifier: Converts an attribute value into its corresponding modifier.
@@ -163,6 +163,7 @@ int main(){
     char userCharacter[25];     // Users character name input
     int userChoice;             // Users choice input
     struct Character *characterList = NULL;
+    loadCharactersFromFile(&characterList);
 
     printf("\nWelcome to the DnD Character Creator!\n");
 
@@ -525,6 +526,99 @@ void freeClasses(void) {
     }
 }
 
+// Function to load students from existing .txt files into the student list
+void loadCharactersFromFile(struct Character **character) {
+    FILE *index = fopen("index.txt", "r");
+    if (index == NULL) {
+        printf("Index file not found. No characters to load.\n\n");
+        return;
+    }
+
+    char fileName[100];
+    while (fgets(fileName, sizeof(fileName), index) != NULL) {
+        // Remove trailing newline character
+        fileName[strcspn(fileName, "\n")] = '\0';
+
+        // Open each file and read character data
+        FILE *characterFile = fopen(fileName, "r");
+        if (characterFile == NULL) {
+            printf("Could not open file: %s\n", fileName);
+            continue;
+        }
+
+        struct Character *newCharacter = malloc(sizeof(struct Character));
+        if (newCharacter == NULL) {
+            printf("Memory allocation failed.\n");
+            fclose(characterFile);
+            exit(1);
+        }
+
+        // Allocate memory for nested structs
+        newCharacter->class = malloc(sizeof(struct Class));
+        newCharacter->armor = malloc(sizeof(struct Armor));
+        newCharacter->weapon = malloc(sizeof(struct Weapon));
+        if (!newCharacter->class || !newCharacter->armor || !newCharacter->weapon) {
+            printf("Memory allocation failed for nested structs.\n");
+            fclose(characterFile);
+            free(newCharacter);
+            exit(1);
+        }
+
+        char className[50], subClass[50], armorName[50], weaponName[50], background[50], race[50], alignment[50];
+
+        // Read the character data from the file
+        fscanf(characterFile,
+               "Name: %[^\n]\n"
+               "Level: %d\n"
+               "Class: %[^\n]\n"
+               "Subclass: %[^\n]\n"
+               "Background: %[^\n]\n"
+               "Race: %[^\n]\n"
+               "Alignment: %[^\n]\n"
+               "HP: %d\n"
+               "Speed: %d\n"
+               "Proficiency Modifier: %d\n"
+               "Strength: %d\n"
+               "Dexterity: %d\n"
+               "Constitution: %d\n"
+               "Intelligence: %d\n"
+               "Wisdom: %d\n"
+               "Charisma: %d\n"
+               "Armor: %[^\n]\n"
+               "Weapon: %[^\n]\n"
+               "Shield: %d\n",
+               newCharacter->name, &newCharacter->level, className, subClass, background, race, alignment, &newCharacter->HP,
+               &newCharacter->speed, &newCharacter->proficiencyModifier, &newCharacter->strength, &newCharacter->dexterity, &newCharacter->constitution, 
+               &newCharacter->intelligence, &newCharacter->wisdom, &newCharacter->charisma, armorName, weaponName, &newCharacter->hasShield);
+
+        // Allocate memory for strings and copy the values
+        newCharacter->class->name = malloc(strlen(className) + 1);
+        strcpy(newCharacter->class->name, className);
+
+        newCharacter->class->subClass = malloc(strlen(subClass) + 1);
+        strcpy(newCharacter->class->subClass, subClass);
+
+        strcpy(newCharacter->background, background);
+        strcpy(newCharacter->race, race);
+        strcpy(newCharacter->alignment, alignment);
+
+        newCharacter->armor->name = malloc(strlen(armorName) + 1);
+        strcpy(newCharacter->armor->name, armorName);
+
+        newCharacter->weapon->name = malloc(strlen(weaponName) + 1);
+        strcpy(newCharacter->weapon->name, weaponName);
+
+        fclose(characterFile);
+
+        // Add the character to the linked list
+        newCharacter->next = *character;
+        *character = newCharacter;
+    }
+
+    fclose(index);
+    printf("Characters loaded successfully from files.\n");
+}
+
 void initializeGlobalArrays(void) {
     loadArmors("armors.txt");
     loadWeapons("weapons.txt");
@@ -684,6 +778,14 @@ void selectSubClass(struct Character *character){
     int usersClass = -1;
     char tempSubClass[50];
 
+    if(character->level < 3){
+        printf("Reach level 3 to unlock Sub Classes.\n\n");
+        strcpy(tempSubClass, "N/A");
+        character->class->subClass = malloc(strlen(tempSubClass) + 1);
+        strcpy(character->class->subClass, tempSubClass);
+        return;
+    }
+
     // Display sub class options
     printf("Enter your character's sub class:\n");
     
@@ -701,6 +803,8 @@ void selectSubClass(struct Character *character){
     // If users class is not found
     if (usersClass == -1) {
         printf("Error: Class not found. Please ensure your character's class is valid.\n");
+        character->class->subClass = malloc(strlen("N/A") + 1);
+        strcpy(character->class->subClass, "N/A");
         return;
     }
 
@@ -1151,9 +1255,7 @@ void addCharacter(struct Character **newChar){
     selectName(newCharacter);
     userCurrLevel = selectLevel(newCharacter);
     selectClass(newCharacter); 
-    if(userCurrLevel > 2){
-        selectSubClass(newCharacter);
-    }
+    selectSubClass(newCharacter);
     selectBackground(newCharacter);
     selectRace(newCharacter);
     selectAlignment(newCharacter);
@@ -1166,8 +1268,50 @@ void addCharacter(struct Character **newChar){
     //inserts the new character at the beginning of the list
     newCharacter->next = *newChar;
     *newChar = newCharacter;
-    if(newCharacter->level < 3){
-        strcpy(newCharacter->class->subClass, "N/A");
+
+    // Gets character first name or name before any spaces
+    char firstName[100];
+    sscanf(newCharacter->name, "%s", firstName);
+    // Create a dynamic file name
+    char fileName[100];
+    snprintf(fileName, sizeof(fileName), "%s.txt", firstName);
+
+    // Write character details to the file
+    FILE *characterFile = fopen(fileName, "w");
+    if (characterFile == NULL) {
+        printf("Couldn't open the file: %s\n", fileName);
+    } else {
+        fprintf(characterFile, "Name: %s\n", newCharacter->name);
+        fprintf(characterFile, "Level: %d\n", newCharacter->level);
+        fprintf(characterFile, "Class: %s\n", newCharacter->class->name);
+        fprintf(characterFile, "Subclass: %s\n", newCharacter->class->subClass);
+        fprintf(characterFile, "Background: %s\n", newCharacter->background);
+        fprintf(characterFile, "Race: %s\n", newCharacter->race);
+        fprintf(characterFile, "Alignment: %s\n", newCharacter->alignment);
+        fprintf(characterFile, "HP: %d\n", newCharacter->HP);
+        fprintf(characterFile, "Speed: %d\n", newCharacter->speed);
+        fprintf(characterFile, "Proficiency Modifier: %d\n", newCharacter->proficiencyModifier);
+        fprintf(characterFile, "Strength: %d\n", newCharacter->strength);
+        fprintf(characterFile, "Dexterity: %d\n", newCharacter->dexterity);
+        fprintf(characterFile, "Constitution: %d\n", newCharacter->constitution);
+        fprintf(characterFile, "Intelligence: %d\n", newCharacter->intelligence);
+        fprintf(characterFile, "Wisdom: %d\n", newCharacter->wisdom);
+        fprintf(characterFile, "Charisma: %d\n", newCharacter->charisma);
+        fprintf(characterFile, "Armor: %s\n", newCharacter->armor->name);
+        fprintf(characterFile, "Weapon: %s\n", newCharacter->weapon->name);
+        fprintf(characterFile, "Shield: %d", newCharacter->hasShield);
+        printf("Character data saved successfully to %s.\n", fileName);
+        fclose(characterFile);
+
+        // Append the file name to index.txt
+        FILE *index = fopen("index.txt", "a");
+        if (index == NULL) {
+            printf("Couldn't open the index file.\n");
+        } 
+        else {
+            fprintf(index, "%s\n", fileName);
+            fclose(index);
+        }
     }
 }
 
