@@ -567,26 +567,9 @@ void loadCharactersFromFile(struct Character **character) {
         char className[50], subClass[50], armorName[50], weaponName[50], background[50], race[50], alignment[50];
 
         // Read the character data from the file
-        fscanf(characterFile,
-               "Name: %[^\n]\n"
-               "Level: %d\n"
-               "Class: %[^\n]\n"
-               "Subclass: %[^\n]\n"
-               "Background: %[^\n]\n"
-               "Race: %[^\n]\n"
-               "Alignment: %[^\n]\n"
-               "HP: %d\n"
-               "Speed: %d\n"
-               "Proficiency Modifier: %d\n"
-               "Strength: %d\n"
-               "Dexterity: %d\n"
-               "Constitution: %d\n"
-               "Intelligence: %d\n"
-               "Wisdom: %d\n"
-               "Charisma: %d\n"
-               "Armor: %[^\n]\n"
-               "Weapon: %[^\n]\n"
-               "Shield: %d\n",
+        fscanf(characterFile, "Name: %[^\n]\n" "Level: %d\n" "Class: %[^\n]\n" "Subclass: %[^\n]\n" "Background: %[^\n]\n" "Race: %[^\n]\n"
+               "Alignment: %[^\n]\n" "HP: %d\n" "Speed: %d\n" "Proficiency Modifier: %d\n" "Strength: %d\n" "Dexterity: %d\n" "Constitution: %d\n"
+               "Intelligence: %d\n" "Wisdom: %d\n" "Charisma: %d\n" "Armor: %[^\n]\n" "Weapon: %[^\n]\n" "Shield: %d\n",
                newCharacter->name, &newCharacter->level, className, subClass, background, race, alignment, &newCharacter->HP,
                &newCharacter->speed, &newCharacter->proficiencyModifier, &newCharacter->strength, &newCharacter->dexterity, &newCharacter->constitution, 
                &newCharacter->intelligence, &newCharacter->wisdom, &newCharacter->charisma, armorName, weaponName, &newCharacter->hasShield);
@@ -1375,19 +1358,79 @@ void updateCharacter(struct Character *updatedCharacter, char *updateCharacterNa
 
     while (updatedCharacter != NULL){
         if (strcmp(updatedCharacter->name, updateCharacterName) == 0){
-            printf("Enter updated details for your character: %s:\n", updateCharacterName);
+            int choice;
+            printf("Found character: %s\n", updateCharacterName);
+            printf("Choose which part of your character you want to update:\n");
 
-            selectLevel(updatedCharacter);
-            selectClass(updatedCharacter);
-            selectBackground(updatedCharacter);
-            selectRace(updatedCharacter);
-            selectAlignment(updatedCharacter);
-            selectAttributes(updatedCharacter); 
-            selectArmor(updatedCharacter);
-            selectWeapon(updatedCharacter);
-            selectShield(updatedCharacter);
+            do {
+                printf("\n1. Level\n2. Class\n3. Background\n4. Race\n5. Alignment\n6. Attributes\n7. Armor\n8. Weapon\n9. Shield\n10. Save and Exit\n");
+                printf("Enter your choice: ");
+                scanf("%d", &choice);
 
-            printf("Character details have been updated successfully.\n\n");
+                switch (choice) {
+                    case 1:
+                        selectLevel(updatedCharacter);
+                        break;
+                    case 2:
+                        selectClass(updatedCharacter);
+                        if(updatedCharacter->level > 2){
+                            selectSubClass(updatedCharacter);
+                        }
+                        break;
+                    case 3:
+                        selectBackground(updatedCharacter);
+                        break;
+                    case 4:
+                        selectRace(updatedCharacter);
+                        break;
+                    case 5:
+                        selectAlignment(updatedCharacter);
+                        break;
+                    case 6:
+                        selectAttributes(updatedCharacter);
+                        break;
+                    case 7:
+                        selectArmor(updatedCharacter);
+                        break;
+                    case 8:
+                        selectWeapon(updatedCharacter);
+                        break;
+                    case 9:
+                        selectShield(updatedCharacter);
+                        break;
+                    case 10:
+                        printf("Exiting update menu...\n");
+                        break;
+                    default:
+                        printf("Invalid choice. Please try again.\n");
+                }
+            } while (choice != 10);
+
+                       // Update the .txt file for the character
+            char firstName[100];
+            sscanf(updatedCharacter->name, "%s", firstName);
+
+            // Construct the corresponding file name
+            char fileName[100];
+            snprintf(fileName, sizeof(fileName), "%s.txt", firstName);
+
+            FILE *characterFile = fopen(fileName, "w");
+            if (characterFile == NULL) {
+                printf("Failed to update the file for character: %s\n", updateCharacterName);
+                return;
+            }
+
+            fprintf(characterFile, "Name: %s\n" "Level: %d\n" "Class: %s\n" "Subclass: %s\n" "Background: %s\n" "Race: %s\n" "Alignment: %s\n"
+                    "HP: %d\n" "Speed: %d\n" "Proficiency Modifier: %d\n" "Strength: %d\n" "Dexterity: %d\n" "Constitution: %d\n"
+                    "Intelligence: %d\n" "Wisdom: %d\n" "Charisma: %d\n" "Armor: %s\n" "Weapon: %s\n" "Shield: %d\n",
+                    updatedCharacter->name, updatedCharacter->level, updatedCharacter->class->name, updatedCharacter->class->subClass, updatedCharacter->background,
+                    updatedCharacter->race, updatedCharacter->alignment, updatedCharacter->HP, updatedCharacter->speed, updatedCharacter->proficiencyModifier,
+                    updatedCharacter->strength, updatedCharacter->dexterity, updatedCharacter->constitution, updatedCharacter->intelligence, updatedCharacter->wisdom,
+                    updatedCharacter->charisma, updatedCharacter->armor->name, updatedCharacter->weapon->name, updatedCharacter->hasShield);
+
+            fclose(characterFile);
+
+            printf("Character details have been successfully updated and saved.\n\n");
             return;
         }
         updatedCharacter = updatedCharacter->next;
