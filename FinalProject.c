@@ -165,16 +165,16 @@ int main(){
     struct Character *characterList = NULL;
     loadCharactersFromFile(&characterList);
 
-    printf("\nWelcome to the DnD Character Creator!\n");
+    printf("\nWelcome to the DnD Character Creator!\n\n");
 
     do{
         // Display menu options
-        printf("\n1. Add a new character\n");
-        printf("2. Level up your character\n");
-        printf("3. Display character\n");
-        printf("4. Search for character\n");
-        printf("5. Update character\n");
-        printf("6. Delete character\n");
+        printf("1. Add a new character\n");
+        printf("2. Level up a character\n");
+        printf("3. Display all characters\n");
+        printf("4. Search for a character\n");
+        printf("5. Update a character\n");
+        printf("6. Delete a character\n");
         printf("7. Dice rolling menu\n");
         printf("8. Exit DnD Character Creator\n");
         printf("Enter your choice: ");
@@ -186,27 +186,28 @@ int main(){
                 addCharacter(&characterList);
                 break;
             case 2:
-                getCharacterName(userCharacter, "Enter the name of the character to level up: ");
+                getCharacterName(userCharacter, "Enter the name of the character you want to level up: ");
                 levelUpCharacter(characterList, userCharacter);
                 break;
             case 3:
                 displayCharacter(characterList);
                 break;
             case 4:
-                getCharacterName(userCharacter, "Enter the name of the character to search for: ");
+                getCharacterName(userCharacter, "Enter the name of the character your looking for: ");
                 searchCharacter(characterList, userCharacter);
                 break;
             case 5:
-                getCharacterName(userCharacter, "Enter the name of your character to update: ");
+                getCharacterName(userCharacter, "Enter the name of your character you want to update: ");
                 updateCharacter(characterList, userCharacter);
                 break;
             case 6: 
-                getCharacterName(userCharacter, "Enter the name of your character to delete: ");
+                getCharacterName(userCharacter, "Enter the name of the character you want to delete: ");
                 deleteCharacter(&characterList, userCharacter); 
                 break;
             case 7:
                 do {
-                    printf("\n1. Roll a D20\n");
+                    printf("\nDice Rolling Menu\n");
+                    printf("1. Roll a D20\n");
                     printf("2. Roll a D20 with modifiers\n");
                     printf("3. Make an attack role with currently equipped weapon\n");
                     printf("4. Roll for damage with currently equipped weapon\n");
@@ -1442,26 +1443,85 @@ void updateCharacter(struct Character *updatedCharacter, char *updateCharacterNa
 //Deletes a character from the list
 void deleteCharacter(struct Character **character, char *deleteCharacterName){
     struct Character *prev = NULL;
-
     struct Character *temp = *character;
 
+    // Find the character in the list
     while(temp != NULL && strcmp(temp->name, deleteCharacterName) != 0){
         prev = temp;
         temp = temp->next;
     }
+
+    // If character not found
     if(temp == NULL){
         printf("Your character could not be found :(\n\n");
         return;
     }
 
-    if(prev == NULL){
-        *character = temp->next;
-    } 
-    else{
-        prev->next = temp->next;
+    // Delete the corresponding .txt file
+    char firstName[100];
+    sscanf(temp->name, "%s", firstName);
+
+    // Construct the filename based on the first name (assumes the file is named firstName.txt)
+    char fileName[100];
+    snprintf(fileName, sizeof(fileName), "%s.txt", firstName);
+
+    // Remove the file
+    if(remove(fileName) == 0){
+        printf("File %s has been deleted.\n", fileName);
+    } else {
+        printf("Error deleting file %s.\n", fileName);
     }
 
+    // Remove the character from the linked list
+    if(prev == NULL){
+        *character = temp->next;  // The character is at the head of the list
+    } else {
+        prev->next = temp->next;  // Bypass the character to remove it
+    }
+
+    // Free the memory occupied by the character
     free(temp);
+
+    // Update the index.txt file
+    FILE *indexFile = fopen("index.txt", "r");
+    if(indexFile == NULL){
+        printf("Error: Could not open index file.\n");
+        return;
+    }
+
+    // Create a temporary file to write the updated index
+    FILE *tempFile = fopen("temp_index.txt", "w");
+    if(tempFile == NULL){
+        printf("Error: Could not create temporary index file.\n");
+        fclose(indexFile);
+        return;
+    }
+
+    char line[100];
+    while(fgets(line, sizeof(line), indexFile)){
+        // Remove the newline character from the line
+        line[strcspn(line, "\n")] = '\0';
+
+        // If the line does not match the fileName, write it to the temp file
+        if(strcmp(line, fileName) != 0){
+            fprintf(tempFile, "%s\n", line);
+        }
+    }
+
+    fclose(indexFile);
+    fclose(tempFile);
+
+    // Replace the old index file with the updated one
+    if(remove("index.txt") == 0){
+        if(rename("temp_index.txt", "index.txt") == 0){
+            printf("Index file updated successfully.\n");
+        } else {
+            printf("Error: Could not rename temporary index file.\n");
+        }
+    } else {
+        printf("Error: Could not delete old index file.\n");
+    }
+
     printf("\nYour character has been deleted...\n\n");
 }
 
