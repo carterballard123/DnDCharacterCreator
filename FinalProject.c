@@ -284,6 +284,7 @@ void inputBuffer(void){
     while (getchar() != '\n');
 }
 
+// Validates user input (for int)
 int isValidInput(int *userInput, int floor, int ceiling) {
 
      // Check if input is a valid integer
@@ -300,6 +301,7 @@ int isValidInput(int *userInput, int floor, int ceiling) {
     return 1;  // Valid input
 }
 
+// Validates if the name is within 24 characters
 int isValidName(char *name) {
     for (int i = 0; name[i] != '\0'; i++) {
         if (isdigit(name[i])) {
@@ -310,6 +312,7 @@ int isValidName(char *name) {
     return 1;  // Valid name, no digits
 }
 
+// Gets characters name
 void getCharacterName(char *name, const char *prompt) {
     inputBuffer();
     printf("%s", prompt);
@@ -318,6 +321,7 @@ void getCharacterName(char *name, const char *prompt) {
 }
 
 // File Loading Functions
+// Loads armor from the armors file and loads them into an array of armor structs
 void loadArmors(const char *filename) {
 
     char buffer[256];
@@ -338,7 +342,7 @@ void loadArmors(const char *filename) {
         int baseAC, dexBonus, stealthDisadvantage, requiresDexCap;
 
         // Parse the line
-        if (sscanf(buffer, "%255[^,],%255[^,],%d,%d,%d,%d", tempName, tempType, &baseAC, &dexBonus, &stealthDisadvantage, &requiresDexCap) != 6) {
+        if (sscanf(buffer, "%255[^,],%255[^,],%d,%d,%d,%d", tempName, tempType, &baseAC, &dexBonus, &requiresDexCap, &stealthDisadvantage) != 6) {
             fprintf(stderr, "Error parsing line: %s\n", buffer);
             fclose(file);
             return;
