@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 struct Character {
     char name[25];            // Character's name (up to 24 characters + null terminator)
@@ -23,7 +24,7 @@ struct Character {
     int armorClass;           // Character's Armor Class (determines how hard they are to hit)
     struct Armor *armor;      // Pointer to the character's equipped armor
     struct Weapon *weapon;    // Pointer to the character's equipped weapon
-    int hasShield;            // Boolean indicating if the character has a shield (1 = yes, 0 = no)
+    bool hasShield;            // Boolean indicating if the character has a shield
     int proficiencyModifier;  // Character's proficiency modifier (based on level)
     int HP;                   // Character's current hit points (health value)
     struct Character *next;   // Pointer to the next character in a linked list
@@ -34,8 +35,8 @@ struct Armor {
     char *type;               // Category of armor (e.g., "Light", "Medium", "Heavy")
     int baseAC;               // Base Armor Class provided by this armor
     int maxDexBonus;          // Maximum Dexterity modifier allowed with this armor (e.g., 2 for medium armor)
-    int requiresDexCap;       // Boolean indicating if the Dexterity modifier is capped (1 = capped, 0 = uncapped)
-    int stealthDisadvantage;  // Boolean indicating if this armor imposes disadvantage on Stealth checks (1 = yes, 0 = no)
+    bool requiresDexCap;       // Boolean indicating if the Dexterity modifier is capped
+    bool stealthDisadvantage;  // Boolean indicating if this armor imposes disadvantage on Stealth checks 
 };
 
 struct Armor armors[13];      // Array to hold all of the data that armors.txt has
@@ -46,13 +47,13 @@ struct Weapon {
     char *damageType;         // Type of damage dealt (e.g., "Slashing", "Piercing", "Bludgeoning")
     char *damageDice;         // Damage dice for the weapon (e.g., "1d8", "2d6")
     char *twoHandDamage;      // Damage dice when used with two hands (if the weapon is versatile)
-    int isFinesse;            // Boolean indicating if the weapon can use Dexterity for attack/damage rolls (1 = yes, 0 = no)
-    int isVersatile;          // Boolean indicating if the weapon can be used one- or two-handed (1 = yes, 0 = no)
-    int isTwoHanded;          // Boolean indicating if the weapon requires two hands to wield (1 = yes, 0 = no)
-    int range[2];             // Weapon's range: [minimum range, maximum range] (e.g., {0, 60} for a thrown weapon)
-    int isLight;              // Boolean indicating if the weapon is light (suitable for dual-wielding) (1 = yes, 0 = no)
-    int isHeavy;              // Boolean indicating if the weapon is heavy (unsuitable for small creatures) (1 = yes, 0 = no)
-    int isReach;              // Boolean indicating if the weapon has extended reach (1 = yes, 0 = no)
+    bool isFinesse;            // Boolean indicating if the weapon can use Dexterity for attack/damage rolls 
+    bool isVersatile;          // Boolean indicating if the weapon can be used one- or two-handed 
+    bool isTwoHanded;          // Boolean indicating if the weapon requires two hands to wield    
+    bool isLight;              // Boolean indicating if the weapon is light (suitable for dual-wielding) 
+    bool isHeavy;              // Boolean indicating if the weapon is heavy (unsuitable for small creatures)
+    bool isReach;               // Boolean indicating if the weapon has extended reach
+    int range[2];              // Weapon's range: [minimum range, maximum range] (e.g., {0, 60} for a thrown weapon)
 };
 
 struct Weapon weapons[31];    // Array to hold all of the data that weapons.txt has
@@ -284,6 +285,10 @@ void inputBuffer(void){
     while (getchar() != '\n');
 }
 
+bool parseBoolean(int num) {
+    return num == 1;
+}
+
 // Validates user input (for int)
 int isValidInput(int *userInput, int floor, int ceiling) {
 
@@ -399,11 +404,13 @@ void loadWeapons(const char *filename) {
         buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
 
         // Temporary buffers for parsing
-        char tempName[256], tempType[256], tempDamageType[256], tempDamageDice[256], tempTwoHandedDamage[256];
-        int tempIsFinesse, tempIsVersatile, tempIsTwoHanded, tempIsLight, tempIsHeavy, tempIsReach, range1, range2;
+        char tempName[256], tempType[256], tempDamageType[256], tempDamageDice[256], tempTwoHandedDamage[256];          // For strings variables
+        int tempIsFinesse, tempIsVersatile, tempIsTwoHanded, tempIsLight, tempIsHeavy, tempIsReach;                     // For boolean variables
+        int range1, range2;                                                                                             // For int variables
 
         // Parse the line using sscanf
-        int result = sscanf(buffer, "%255[^,],%255[^,],%255[^,],%255[^,],%255[^,],%d,%d,%d,%d,%d,%d,%d,%d", tempName, tempType, tempDamageType, tempDamageDice, tempTwoHandedDamage, &tempIsFinesse, &tempIsVersatile, &tempIsTwoHanded, &range1, &range2, &tempIsLight, &tempIsHeavy, &tempIsReach);
+        int result = sscanf(buffer, "%255[^,],%255[^,],%255[^,],%255[^,],%255[^,],%d,%d,%d,%d,%d,%d,%d,%d", tempName, tempType, tempDamageType, tempDamageDice, tempTwoHandedDamage,
+                    &tempIsFinesse, &tempIsVersatile, &tempIsTwoHanded, &tempIsLight, &tempIsHeavy, &tempIsReach, &range1, &range2);
 
         if (result != 13) {
             fprintf(stderr, "Error parsing line: %s\n", buffer);
@@ -411,11 +418,11 @@ void loadWeapons(const char *filename) {
         }
 
         // Allocate memory for name, type, damageType, damage, and range
-        weapons[count].name = malloc(strlen(tempName) + 1);
-        weapons[count].type = malloc(strlen(tempType) + 1);
-        weapons[count].damageType = malloc(strlen(tempDamageType) + 1);
-        weapons[count].damageDice = malloc(strlen(tempDamageDice) + 1);
-        weapons[count].twoHandDamage = malloc(strlen(tempTwoHandedDamage) + 1);
+        weapons[count].name = strdup(tempName);
+        weapons[count].type = strdup(tempType);
+        weapons[count].damageType = strdup(tempDamageType);
+        weapons[count].damageDice = strdup(tempDamageDice);
+        weapons[count].twoHandDamage = strdup(tempTwoHandedDamage);
 
         if (weapons[count].name == NULL || weapons[count].type == NULL || weapons[count].damageType == NULL || weapons[count].damageDice == NULL || weapons[count].twoHandDamage == NULL) {
             fprintf(stderr, "Memory allocation error\n");
@@ -423,22 +430,17 @@ void loadWeapons(const char *filename) {
             return;
         }
 
-        // Copy the parsed strings into the dynamically allocated memory
-        strcpy(weapons[count].name, tempName);
-        strcpy(weapons[count].type, tempType);
-        strcpy(weapons[count].damageType, tempDamageType);
-        strcpy(weapons[count].damageDice, tempDamageDice);
-        strcpy(weapons[count].twoHandDamage, tempTwoHandedDamage);
+        // Convert the "true"/"false" strings to booleans
+        weapons[count].isFinesse = parseBoolean(tempIsFinesse);
+        weapons[count].isVersatile = parseBoolean(tempIsVersatile);
+        weapons[count].isTwoHanded = parseBoolean(tempIsTwoHanded);
+        weapons[count].isLight = parseBoolean(tempIsLight);
+        weapons[count].isHeavy = parseBoolean(tempIsHeavy);
+        weapons[count].isReach = parseBoolean(tempIsReach);
 
-        // Populate the remaining fields
-        weapons[count].isFinesse = tempIsFinesse;
-        weapons[count].isVersatile = tempIsVersatile;
-        weapons[count].isTwoHanded = tempIsTwoHanded;
+        // Set the range values
         weapons[count].range[0] = range1;
         weapons[count].range[1] = range2;
-        weapons[count].isLight = tempIsLight;
-        weapons[count].isHeavy = tempIsHeavy;
-        weapons[count].isReach = tempIsReach;
 
         count++;
     }

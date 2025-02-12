@@ -1,31 +1,31 @@
-Club,Melee,Bludgeoning,1d4,1d4,0,0,0,0,0,0,1,0
-Light Hammer,Melee/Ranged,Bludgeoning,1d4,1d4,0,0,0,20,60,0,1,0
+Club,Melee,Bludgeoning,1d4,1d4,0,0,0,0,1,0,0,0
+Light Hammer,Melee/Ranged,Bludgeoning,1d4,1d4,0,0,0,0,1,0,20,60
 Mace,Melee,Bludgeoning,1d6,1d6,0,0,0,0,0,0,0,0
 Quarterstaff,Melee,Bludgeoning,1d6,1d8,0,1,0,0,0,0,0,0
 Flail,Melee,Bludgeoning,1d8,1d8,0,0,0,0,0,0,0,0
 Greatclub,Melee,Bludgeoning,1d8,1d8,0,0,1,0,0,0,0,0
 Warhammer,Melee,Bludgeoning,1d8,1d10,0,1,0,0,0,0,0,0
-Maul,Melee,Bludgeoning,2d6,2d6,0,0,1,0,0,0,1,0
-Dagger,Melee/Ranged,Piercing,1d4,1d4,1,0,0,20,60,0,1,0
-Javelin,Ranged,Piercing,1d6,1d6,0,0,0,30,120,0,0,0
-Spear,Melee/Ranged,Piercing,1d6,1d8,0,1,0,20,60,0,0,0
-Trident,Melee/Ranged,Piercing,1d6,1d8,0,1,0,20,60,0,0,0
+Maul,Melee,Bludgeoning,2d6,2d6,0,0,1,0,1,0,0,0
+Dagger,Melee/Ranged,Piercing,1d4,1d4,1,0,0,0,1,0,20,60
+Javelin,Ranged,Piercing,1d6,1d6,0,0,0,0,0,0,30,120
+Spear,Melee/Ranged,Piercing,1d6,1d8,0,1,0,0,0,0,20,60
+Trident,Melee/Ranged,Piercing,1d6,1d8,0,1,0,0,0,0,20,60
 Rapier,Melee,Piercing,1d8,1d8,1,0,0,0,0,0,0,0
 War Pick,Melee,Piercing,1d8,1d8,0,0,0,0,0,0,0,0
-Pike,Melee,Piercing,1d10,1d10,0,0,1,0,0,0,1,1
-Lance,Melee,Piercing,1d12,1d12,0,0,0,0,0,0,0,1
-Sickle,Melee,Slashing,1d4,1d4,0,0,0,0,0,0,1,0
-Handaxe,Melee/Ranged,Slashing,1d6,1d6,0,0,0,20,60,0,1,0
-Scimitar,Melee,Slashing,1d6,1d6,1,0,0,0,0,1,0,0
-Shortsword,Melee,Piercing,1d6,1d6,1,0,0,0,0,1,0,0
+Pike,Melee,Piercing,1d10,1d10,0,0,1,0,1,1,0,5
+Lance,Melee,Piercing,1d12,1d12,0,0,0,0,0,1,0,5
+Sickle,Melee,Slashing,1d4,1d4,0,0,0,0,1,0,0,0
+Handaxe,Melee/Ranged,Slashing,1d6,1d6,0,0,0,0,1,0,20,60
+Scimitar,Melee,Slashing,1d6,1d6,1,0,0,1,0,0,0,0
+Shortsword,Melee,Piercing,1d6,1d6,1,0,0,1,0,0,0,0
 Battleaxe,Melee,Slashing,1d8,1d10,0,1,0,0,0,0,0,0
 Longsword,Melee,Slashing,1d8,1d10,0,1,0,0,0,0,0,0
-Glaive,Melee,Slashing,1d10,1d10,0,0,1,0,0,0,1,1
-Halberd,Melee,Slashing,1d10,1d10,0,0,1,0,0,0,1,1
-Greataxe,Melee,Slashing,1d12,1d12,0,0,1,0,0,0,1,0
-Greatsword,Melee,Slashing,2d6,2d6,0,0,1,0,0,0,1,0
-Hand Crossbow,Ranged,Piercing,1d6,1d6,0,0,0,30,120,1,0,0
-Shortbow,Ranged,Piercing,1d6,1d6,0,0,1,80,320,0,0,0
-Light Crossbow,Ranged,Piercing,1d8,1d8,0,0,1,80,320,0,0,0
-Longbow,Ranged,Piercing,1d8,1d8,0,0,1,150,600,0,1,0
-Heavy Crossbow,Ranged,Piercing,1d10,1d10,0,0,1,100,400,0,1,0
+Glaive,Melee,Slashing,1d10,1d10,0,0,1,0,1,1,0,5
+Halberd,Melee,Slashing,1d10,1d10,0,0,1,0,1,1,0,5
+Greataxe,Melee,Slashing,1d12,1d12,0,0,1,0,1,0,0,0
+Greatsword,Melee,Slashing,2d6,2d6,0,0,1,0,1,0,0,0
+Hand Crossbow,Ranged,Piercing,1d6,1d6,0,0,0,1,0,0,30,120
+Shortbow,Ranged,Piercing,1d6,1d6,0,0,1,0,0,0,80,320
+Light Crossbow,Ranged,Piercing,1d8,1d8,0,0,1,0,0,0,80,320
+Longbow,Ranged,Piercing,1d8,1d8,0,0,1,0,1,0,150,600
+Heavy Crossbow,Ranged,Piercing,1d10,1d10,0,0,1,0,1,0,100,400
